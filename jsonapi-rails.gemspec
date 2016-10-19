@@ -18,7 +18,12 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'jsonapi-serializable', '0.1.1.beta2'
   spec.add_dependency 'jsonapi-deserializable', '0.1.1.beta3'
 
+  # because this gem is intended for rails use, active_support will
+  # already be included
+  spec.add_dependency 'activesupport', '> 4.0'
+
   spec.add_development_dependency 'activerecord', '>=5'
+  spec.add_development_dependency 'rails', '>=5'
   spec.add_development_dependency 'sqlite3', '>= 1.3.12'
   spec.add_development_dependency 'rake', '>=0.9'
   spec.add_development_dependency 'rspec', '~>3.4'
