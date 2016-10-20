@@ -20,8 +20,48 @@ module JSONAPI
     #  - allow custom deserializable_classes?
     #    - then this gem would just be a very light weight wrapper around
     #      jsonapi/deserializable
-    module Deserialization
-      module_function
+    class DeserializableResource < JSONAPI::Deserializable::Resource
+
+      class << self
+        def deserializable_cache
+          @deserializable_cache ||= {}
+        end
+
+        # Creates a DeserializableResource class based off all the
+        # attributes and relationships
+        #
+        # @example
+        #   JSONAPI::Rails::DeserializableResource[Post].new(params)
+        def [](klass)
+          deserializable_cache[klass.name] ||= deserializable_for_class(klass)
+        end
+
+        def deserializable_for_class(klass)
+          Class.new(JSONAPI::Rails::DeserializableResource) do
+            # All Attributes
+            optional do
+              attributes_for_class(klass) do |attribute_name|
+                attribute attribute_name
+              end
+            end
+
+            # All Associations
+            optional do
+              associations_for_class(klass) do |name, reflection|
+                if reflection.collection?
+                  has_many name, reflection.class_name
+                else
+                  has_one name, reflection.class_name
+                end
+              end
+            end
+          end
+        end
+      end
+
+      def initialize(hash, options: {}, klass: nil)
+
+      end
 
       def to_active_record_hash(hash, options: {}, klass: nil)
         type = hash['data']['type']
