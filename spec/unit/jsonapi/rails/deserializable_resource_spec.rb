@@ -44,22 +44,6 @@ describe JSONAPI::Rails::DeserializableResource do
 
   end
 
-  describe '#attributes_for_class' do
-
-  end
-
-  describe '#associations_for_class' do
-
-  end
-
-  describe '#class_for_deserialization' do
-
-  end
-
-  describe '#type_to_model' do
-
-  end
-
   context 'options' do
     context 'polymorphic' do
 
