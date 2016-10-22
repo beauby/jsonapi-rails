@@ -1,4 +1,4 @@
-require 'activesupport' # really just core_ext/string
+require 'active_support' # really just core_ext/string
 # require 'activerecord'
 require 'jsonapi/deserializable'
 
@@ -21,8 +21,12 @@ module JSONAPI
     #    - then this gem would just be a very light weight wrapper around
     #      jsonapi/deserializable
     class DeserializableResource < JSONAPI::Deserializable::Resource
+      require_relative 'deserializable_resource/builder'
+
+      include Builder
 
       class << self
+
         def deserializable_cache
           @deserializable_cache ||= {}
         end
@@ -33,34 +37,16 @@ module JSONAPI
         # @example
         #   JSONAPI::Rails::DeserializableResource[Post].new(params)
         def [](klass)
-          deserializable_cache[klass.name] ||= deserializable_for_class(klass)
+          deserializable_cache[klass.name] ||= deserializable_for(klass)
         end
 
-        def deserializable_for_class(klass)
-          Class.new(JSONAPI::Rails::DeserializableResource) do
-            # All Attributes
-            optional do
-              attributes_for_class(klass) do |attribute_name|
-                attribute attribute_name
-              end
-            end
-
-            # All Associations
-            optional do
-              associations_for_class(klass) do |name, reflection|
-                if reflection.collection?
-                  has_many name, reflection.class_name
-                else
-                  has_one name, reflection.class_name
-                end
-              end
-            end
-          end
+        def deserializable_for(klass)
+          DeserializableResource::Builder.for_class(klass)
         end
       end
 
       def initialize(hash, options: {}, klass: nil)
-
+        self.class.deserializable_cache
       end
 
       def to_active_record_hash(hash, options: {}, klass: nil)
@@ -68,63 +54,6 @@ module JSONAPI
         klass = deserializable_class(type, klass)
 
         deserializable_for_class(klass).new(hash).to_h
-      end
-
-      def deserializable_for_class(klass)
-        Class.new(JSONAPI::Deserializable::Resource) do
-          # All Attributes
-          optional do
-            attributes_for_class(klass) do |attribute_name|
-              attribute attribute_name
-            end
-          end
-
-          # All Associations
-          optional do
-            associations_for_class(klass) do |name, reflection|
-              if reflection.collection?
-                has_many name, reflection.class_name
-              else
-                has_one name, reflection.class_name
-              end
-            end
-          end
-        end
-      end
-
-      def attributes_for_class(klass)
-        klass.columns.map(&:name)
-      end
-
-      # @return [Hash]
-      #  example:
-      #    {
-      #      'author' => #<ActiveRecord::Reflection::BelongsToReflection ...>,
-      #      'comments' => #<ActiveRecord::Reflection::HasManyReflection ...>
-      #    }
-      #
-      # for a reflection, the import parts for deserialization may be as follows:
-      #  - Reflection (BelongsTo / HasMany)
-      #    - name - symbol version of the association name (e.g.: :author)
-      #    - collection? - if the reflection is a collection of records
-      #    - class_name - AR Class of the association
-      #    - foreign_type - name of the polymorphic type column
-      #    - foreign_key - name of the foreign_key column
-      #    - polymorphic? - true/false/nil
-      #    - type - name of the type column (for STI)
-      #
-      # To see a full list of reflection methods:
-      #  ap klass.reflections['reflection_name'].methods - Object.methods
-      def associations_for_class(klass)
-        klass.reflections
-      end
-
-      def deserializable_class(type, klass)
-        klass || type_to_model(type)
-      end
-
-      def type_to_model(type)
-        type.classify.constantize
       end
     end
   end

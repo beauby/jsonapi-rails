@@ -1,4 +1,6 @@
 module JSONAPI
+  require_relative 'jsonapi/rails'
+
   module_function
 
   def to_active_record_hash(hash, options: {}, klass: nil)
