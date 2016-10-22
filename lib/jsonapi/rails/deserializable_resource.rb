@@ -1,5 +1,3 @@
-require 'active_support' # really just core_ext/string
-# require 'activerecord'
 require 'jsonapi/deserializable'
 
 module JSONAPI
@@ -26,7 +24,6 @@ module JSONAPI
       include Builder
 
       class << self
-
         def deserializable_cache
           @deserializable_cache ||= {}
         end
@@ -45,15 +42,38 @@ module JSONAPI
         end
       end
 
+      attr_accessor :_hash, :_options, :_klass
+
+      # if this class is instatiated directly, i.e.: without a spceified
+      # class via
+      #  JSONAPI::Rails::DeserializableResource[ExampleClass]
+      # then when to_hash is called, the class will be derived, and
+      # a class will be used for deserialization as if the
+      # user specified the deserialization target class.
       def initialize(hash, options: {}, klass: nil)
-        self.class.deserializable_cache
+        @_hash = hash
+        @_options = options
+        @_klass = klass
       end
 
-      def to_active_record_hash(hash, options: {}, klass: nil)
-        type = hash['data']['type']
-        klass = deserializable_class(type, klass)
+      def to_hash
+        type = _hash['data']['type']
+        klass = deserializable_class(type, _klass)
 
-        deserializable_for_class(klass).new(hash).to_h
+        self.class.deserializable_for(klass).new(
+          hash,
+          options: _options
+        ).to_h
+      end
+
+      private
+
+      def deserializable_class(type, klass)
+        klass || type_to_model(type)
+      end
+
+      def type_to_model(type)
+        type.classify.constantize
       end
     end
   end
