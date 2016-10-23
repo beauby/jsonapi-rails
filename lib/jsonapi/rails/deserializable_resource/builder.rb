@@ -22,7 +22,6 @@ module JSONAPI
 
           deserializable.class_eval do
             attributes.each do |attribute_name|
-              puts attribute_name
               attribute attribute_name
             end
           end
