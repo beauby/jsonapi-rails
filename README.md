@@ -26,7 +26,7 @@ require 'jsonapi'
 Then, parse a JSON API document:
 
 ```ruby
-hash = JSONAPI::Rails.to_active_record_hash(json_api_params, options: {}, klass: nil)
+hash = JSONAPI::Deserializable.to_active_record_hash(json_api_params, options: {}, klass: nil)
 ```
 
 Notes
