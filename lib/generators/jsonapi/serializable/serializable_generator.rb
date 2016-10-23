@@ -25,7 +25,7 @@ module Jsonapi
     def attr_names
       attrs = model_klass.new.attribute_names - ['id']
       fk_attrs = model_klass.reflect_on_all_associations(:belongs_to)
-                 .map(&:foreign_key)
+                             .map(&:foreign_key)
       attrs - fk_attrs
     end
 
