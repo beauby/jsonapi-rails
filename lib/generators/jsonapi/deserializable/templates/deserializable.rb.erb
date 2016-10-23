@@ -1,5 +1,5 @@
 <% module_namespacing do -%>
-class Deserializable<%= class_name %> < JSONAPI::Deserializable::Model
+class Deserializable<%= class_name %> < JSONAPI::Deserializable::Resource
   id
 
 <% attr_names.each do |attr| -%>
