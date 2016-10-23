@@ -7,7 +7,7 @@ class Deserializable<%= class_name %> < JSONAPI::Deserializable::Model
 <% end -%>
 
 <% has_one_rels.each do |reflection| -%>
-  has_one :<%= reflection.name %> do
+  has_one :<%= reflection.name %> do |rel, id, type|
     field <%= has_one_id_field_name(reflection.name) %>: id
 <% if reflection.polymorphic? -%>
     field <%= has_one_type_field_name(reflection.name) %>: type
@@ -15,7 +15,7 @@ class Deserializable<%= class_name %> < JSONAPI::Deserializable::Model
   end
 <% end -%>
 <% has_many_rels.each do |reflection| -%>
-  has_many :<%= reflection.name %> do
+  has_many :<%= reflection.name %> do |rel, ids, types|
     field <%= has_many_id_field_name(reflection.name) %>: ids
 <% if reflection.polymorphic? -%>
     field <%= has_one_type_field_name(reflection.name) %>: types
