@@ -42,7 +42,10 @@ module JSONAPI
               else
                 has_one name do |rel|
                   field "#{name}_id" => rel['data'] && rel['data']['id']
-                  field "#{name}_type" => rel['data'] && rel['data']['type'].classify
+
+                  if reflection.polymorphic?
+                    field "#{name}_type" => rel['data'] && rel['data']['type'].classify
+                  end
                 end
               end
             end

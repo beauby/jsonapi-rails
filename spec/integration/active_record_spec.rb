@@ -9,6 +9,7 @@ describe JSONAPI::Deserializable::ActiveRecord do
                                 t.string :name
                                 t.string :body
                                 t.references :author, polymorphic: true
+                                t.references :user
                               end
 
                               create_table :users do |t|
@@ -17,7 +18,10 @@ describe JSONAPI::Deserializable::ActiveRecord do
                             end) do
       # Clear cache just in case a test runs before this one
       klass.instance_variable_set('@deserializable_cache', {})
-      class Post < ActiveRecord::Base; belongs_to :author, polymorphic: true; end
+      class Post < ActiveRecord::Base
+        belongs_to :author, polymorphic: true
+        belongs_to :user
+      end
       class User < ActiveRecord::Base; has_many :posts; end
       example.run
     end
@@ -69,6 +73,12 @@ describe JSONAPI::Deserializable::ActiveRecord do
                   'id' => 1,
                   'type' => 'users'
                 }
+              },
+              'user' => {
+                'data' => {
+                  'id' => 2,
+                  'type' => 'users'
+                }
               }
             }
           }
@@ -81,7 +91,8 @@ describe JSONAPI::Deserializable::ActiveRecord do
           'name' => 'Name',
           'body' => 'content',
           'author_id' => 1,
-          'author_type' => 'User'
+          'author_type' => 'User',
+          'user_id' => 2
         }
 
         expect(result).to eq expected
