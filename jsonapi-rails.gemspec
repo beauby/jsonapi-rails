@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
   spec.files         = Dir['README.md', 'lib/**/*']
   spec.require_path  = 'lib'
 
-  spec.add_dependency 'jsonapi-deserializable', '~> 0.1'
+  spec.add_dependency 'jsonapi-deserializable', '0.1.1.beta2'
   # because this gem is intended for rails use, active_support will
   # already be included
   spec.add_dependency 'activesupport', '> 4.0'
