@@ -20,7 +20,14 @@ end
 
 def reset_column_information
   all_tables.each do |table_name|
-    table_name.classify.safe_constantize&.reset_column_information
+    class_name = table_name.classify
+    ar_class = class_name.safe_constantize
+    if ar_class
+      ar_class.reset_column_information
+      # unset it, so we can also clear active_record relationships
+      # and other class-level stuff
+      Object.send(:remove_const, class_name.to_sym)
+    end
   end
 end
 
