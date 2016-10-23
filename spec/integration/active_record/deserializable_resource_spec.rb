@@ -5,11 +5,20 @@ describe JSONAPI::Rails::DeserializableResource do
 
   around(:each) do |example|
     with_temporary_database(lambda do
-                              create_table :posts
+                              create_table :posts do |t|
+                                t.string :name
+                                t.string :body
+                                t.references :author, polymorphic: true
+                              end
+
+                              create_table :users do |t|
+                                t.string :name
+                              end
                             end) do
       # Clear cache just in case a test runs before this one
       klass.instance_variable_set('@deserializable_cache', {})
-      class Post < ActiveRecord::Base; end
+      class Post < ActiveRecord::Base; belongs_to :author, polymorphic: true; end
+      class User < ActiveRecord::Base; has_many :posts; end
       example.run
     end
   end
@@ -21,24 +30,62 @@ describe JSONAPI::Rails::DeserializableResource do
   end
 
   context 'deserializing a jsonapi document' do
-    before(:all) do
-      @payload = {
-        'data' => {
-          'id' => '1',
-          'type' => 'posts',
-          'attributes' => {
-            'name' => 'Name',
-            'body' => 'content'
+    context 'with attributes' do
+      before(:all) do
+        @payload = {
+          'data' => {
+            'id' => '1',
+            'type' => 'posts',
+            'attributes' => {
+              'name' => 'Name',
+              'body' => 'content'
+            },
+            'relationships' => {}
           }
         }
-      }
+      end
+
+      it 'pulls out the attributes' do
+        result = JSONAPI::Rails.to_active_record_hash(@payload, options: {}, klass: Post)
+        expected = { 'name' => 'Name', 'body' => 'content' }
+
+        expect(result).to eq expected
+      end
     end
 
-    it 'pulls out the attributes' do
-      result = JSONAPI::Rails.to_active_record_hash(@payload, options: {}, klass: Post)
-      expected = { 'name' => 'Name', 'body' => 'content' }
+    context 'with polymorphic relationships' do
+      before(:all) do
+        @payload = {
+          'data' => {
+            'id' => '1',
+            'type' => 'posts',
+            'attributes' => {
+              'name' => 'Name',
+              'body' => 'content'
+            },
+            'relationships' => {
+              'author' => {
+                'data' => {
+                  'id' => 1,
+                  'type' => 'users'
+                }
+              }
+            }
+          }
+        }
+      end
 
-      expect(result).to eq expected
+      it 'pulls out the attributes' do
+        result = JSONAPI::Rails.to_active_record_hash(@payload, options: {}, klass: Post)
+        expected = {
+          'name' => 'Name',
+          'body' => 'content',
+          'author_id' => 1,
+          'author_type' => 'User'
+        }
+
+        expect(result).to eq expected
+      end
     end
   end
 end

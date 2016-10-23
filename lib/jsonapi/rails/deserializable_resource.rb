@@ -18,7 +18,7 @@ module JSONAPI
     #  - allow custom deserializable_classes?
     #    - then this gem would just be a very light weight wrapper around
     #      jsonapi/deserializable
-    class DeserializableResource < JSONAPI::Deserializable::Resource
+    class DeserializableResource
       require_relative 'deserializable_resource/builder'
 
       class << self
@@ -66,7 +66,7 @@ module JSONAPI
         type = _hash['data']['type']
         klass = self.class.deserializable_class(type, _klass)
 
-        self.class[klass].call(_hash)
+        self.class[klass].call(_hash).with_indifferent_access
       end
     end
   end

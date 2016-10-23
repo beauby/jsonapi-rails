@@ -8,7 +8,7 @@ module JSONAPI
 
         def for_class(klass)
           builder = self
-          Class.new(JSONAPI::Rails::DeserializableResource) do
+          Class.new(JSONAPI::Deserializable::Resource) do
             # All Attributes
             builder.define_attributes(self, klass)
 
@@ -40,7 +40,7 @@ module JSONAPI
               else
                 has_one name do |rel|
                   field "#{name}_id" => rel['data'] && rel['data']['id']
-                  field "#{name}_type" => rel['data'] && rel['data']['type']
+                  field "#{name}_type" => rel['data'] && rel['data']['type'].classify
                 end
               end
             end

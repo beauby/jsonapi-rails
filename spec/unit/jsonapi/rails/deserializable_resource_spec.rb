@@ -54,16 +54,6 @@ describe JSONAPI::Rails::DeserializableResource do
     end
   end
 
-  describe '.new' do
-    it 'caches generated classes' do
-
-    end
-  end
-
-  describe '#to_h' do
-
-  end
-
   context 'options' do
     context 'polymorphic' do
 

@@ -3,14 +3,22 @@ describe JSONAPI::Rails::DeserializableResource::Builder do
   let(:klass) { JSONAPI::Rails::DeserializableResource::Builder }
 
   describe '.for_class' do
-    it 'can be instantiated' do
+    it 'returns a DeserializableResource' do
       with_temporary_database(lambda do
                                 create_table :posts
                               end) do
         class Post < ActiveRecord::Base; end
         deserializer = klass.for_class(Post)
 
-        expect(deserializer.new({})).to be_a_kind_of JSONAPI::Rails::DeserializableResource
+        dummy_payload = {
+          'data' => {
+            'id' => '1',
+            'type' => 'posts',
+            'attributes' => {}
+          }
+        }
+
+        expect(deserializer.new(dummy_payload)).to be_a_kind_of JSONAPI::Deserializable::Resource
       end
     end
 
