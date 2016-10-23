@@ -4,6 +4,7 @@ AllCops:
     - !ruby/regexp /(vendor|bundle|bin|db|tmp)\/.*/
   DisplayCopNames: true
   DisplayStyleGuide: true
+  TargetRubyVersion: 2.3
 
 Lint/AssignmentInCondition:
   Enabled: false
@@ -33,6 +34,10 @@ Metrics/LineLength:
 
 Metrics/MethodLength:
   Max: 25
+
+Metrics/BlockLength:
+  Exclude:
+    - spec/**/*
 
 Metrics/PerceivedComplexity:
   Max: 9 # TODO: Lower to 7

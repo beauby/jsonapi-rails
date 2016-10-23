@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'jsonapi/deserializable'
 
 module JSONAPI
@@ -20,6 +21,7 @@ module JSONAPI
     #      jsonapi/deserializable
     class DeserializableResource
       require_relative 'deserializable_resource/builder'
+      require_relative 'deserializable_resource/unrestricted'
 
       class << self
         def deserializable_cache
@@ -39,12 +41,16 @@ module JSONAPI
           DeserializableResource::Builder.for_class(klass)
         end
 
+        def unrestricted_deserialization(hash)
+          DeserializableResource::Unrestricted.to_active_record_hash(hash)
+        end
+
         def deserializable_class(type, klass)
           klass || type_to_model(type)
         end
 
         def type_to_model(type)
-          type.classify.constantize
+          type.classify.safe_constantize
         end
       end
 
@@ -56,6 +62,11 @@ module JSONAPI
       # then when to_hash is called, the class will be derived, and
       # a class will be used for deserialization as if the
       # user specified the deserialization target class.
+      #
+      # Note that by specifying klass to false, no class will be used.
+      # This means that every part of the JSONAPI Document will be
+      # deserialized, and none of it will be whitelisted against any
+      # class
       def initialize(hash, options: {}, klass: nil)
         @_hash = hash
         @_options = options
@@ -65,6 +76,11 @@ module JSONAPI
       def to_hash
         type = _hash['data']['type']
         klass = self.class.deserializable_class(type, _klass)
+
+        if _klass == false || klass.nil?
+          puts "WARNING: class not found for type of `#{type}` or specified _klass `#{_klass&.name}`"
+          return self.class.unrestricted_deserialization(_hash)
+        end
 
         self.class[klass].call(_hash).with_indifferent_access
       end

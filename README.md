@@ -26,10 +26,14 @@ require 'jsonapi'
 Then, parse a JSON API document:
 
 ```ruby
-hash = JSONAPI.to_active_record_hash(json_api_params, options: {}, klass: nil)
+hash = JSONAPI::Rails.to_active_record_hash(json_api_params, options: {}, klass: nil)
 ```
 
-Note that klass is optional, and defaults to nil, but will infer the type from the json api document.
+Notes
+ - that klass is optional, and defaults to nil, but will infer the type from the json api document.
+ - this will not do any key transforms -- casing will be consistent from input to output
+ - this does not perform validations. (see jsonapi/validations)
+
 
 ### Available Options
 
