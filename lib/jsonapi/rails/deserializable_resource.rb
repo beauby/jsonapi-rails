@@ -21,8 +21,6 @@ module JSONAPI
     class DeserializableResource < JSONAPI::Deserializable::Resource
       require_relative 'deserializable_resource/builder'
 
-      include Builder
-
       class << self
         def deserializable_cache
           @deserializable_cache ||= {}
@@ -39,6 +37,14 @@ module JSONAPI
 
         def deserializable_for(klass)
           DeserializableResource::Builder.for_class(klass)
+        end
+
+        def deserializable_class(type, klass)
+          klass || type_to_model(type)
+        end
+
+        def type_to_model(type)
+          type.classify.constantize
         end
       end
 
@@ -58,22 +64,9 @@ module JSONAPI
 
       def to_hash
         type = _hash['data']['type']
-        klass = deserializable_class(type, _klass)
+        klass = self.class.deserializable_class(type, _klass)
 
-        self.class.deserializable_for(klass).new(
-          hash,
-          options: _options
-        ).to_h
-      end
-
-      private
-
-      def deserializable_class(type, klass)
-        klass || type_to_model(type)
-      end
-
-      def type_to_model(type)
-        type.classify.constantize
+        self.class[klass].call(_hash)
       end
     end
   end

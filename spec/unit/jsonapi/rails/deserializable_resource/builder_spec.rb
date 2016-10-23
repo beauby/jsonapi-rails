@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 describe JSONAPI::Rails::DeserializableResource::Builder do
   let(:klass) { JSONAPI::Rails::DeserializableResource::Builder }
 
@@ -10,6 +11,53 @@ describe JSONAPI::Rails::DeserializableResource::Builder do
         deserializer = klass.for_class(Post)
 
         expect(deserializer.new({})).to be_a_kind_of JSONAPI::Rails::DeserializableResource
+      end
+    end
+
+    it 'defines all the attributes' do
+      with_temporary_database(lambda do
+                                create_table :posts do |t|
+                                  t.string :name
+                                  t.string :body
+                                end
+                              end) do
+        class Post < ActiveRecord::Base; end
+        deserializer = klass.for_class(Post)
+        # defined in JSONAPI/DeserializableResource
+        result = deserializer.attr_blocks.keys
+        expected = %w(id name body)
+        expect(result).to eq expected
+      end
+    end
+
+    it 'defines all relationships' do
+      with_temporary_database(lambda do
+                                create_table :posts do |t|
+                                  t.string :name
+                                  t.string :body
+                                  t.references :author
+                                end
+
+                                create_table :comments do |t|
+                                  t.references :post
+                                end
+
+                                create_table :authors
+                              end) do
+        class Author < ActiveRecord::Base; end
+        class Comment < ActiveRecord::Base; end
+        class Post < ActiveRecord::Base
+          has_many :comments
+          belongs_to :author
+        end
+
+        deserializer = klass.for_class(Post)
+        # defined in JSONAPI/DeserializableResource
+        result_has_many = deserializer.has_many_rel_blocks.keys
+        result_has_one = deserializer.has_one_rel_blocks.keys
+
+        expect(result_has_many).to eq ['comments']
+        expect(result_has_one).to eq ['author']
       end
     end
   end
@@ -40,30 +88,6 @@ describe JSONAPI::Rails::DeserializableResource::Builder do
 
         expect(associations.keys).to eq ['post']
       end
-    end
-  end
-
-  describe '.deserializable_class' do
-    it 'returns klass if specified' do
-      result = klass.deserializable_class('jsonapi-types', 'anything')
-
-      expect(result).to eq 'anything'
-    end
-  end
-
-  describe '.type_to_model' do
-    class A; end
-    class A::B; end
-    class C < A; end
-    class D < A::B; end
-
-    let(:to_model) { ->(str) { klass.type_to_model(str) } }
-
-    it 'converts plural types to a class' do
-      expect(to_model.call('as')).to eq A
-      expect(to_model.call('a/bs')).to eq A::B
-      expect(to_model.call('cs')).to eq C
-      expect(to_model.call('d')).to eq D
     end
   end
 end

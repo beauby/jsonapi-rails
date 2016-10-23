@@ -34,12 +34,11 @@ describe JSONAPI::Rails::DeserializableResource do
       }
     end
 
-    it 'pulls out the id' do
-      JSONAPI::Rails.to_active_record_hash(@payload, options: {}, klass: Post)
-    end
+    it 'pulls out the attributes' do
+      result = JSONAPI::Rails.to_active_record_hash(@payload, options: {}, klass: Post)
+      expected = { 'name' => 'Name', 'body' => 'content' }
 
-    it 'has all fields settable on the post' do
-
+      expect(result).to eq expected
     end
   end
 end

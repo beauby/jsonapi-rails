@@ -4,7 +4,9 @@ describe JSONAPI::Rails::DeserializableResource do
     context 'creates a DeserializableResource class' do
       around(:each) do |example|
         with_temporary_database(lambda do
-                                  create_table :posts
+                                  create_table :posts do |t|
+                                    t.string :title
+                                  end
                                 end) do
           # Clear cache just in case a test runs before this one
           klass.instance_variable_set('@deserializable_cache', {})
@@ -23,7 +25,10 @@ describe JSONAPI::Rails::DeserializableResource do
         json = {
           'data' => {
             'id' => 1,
-            'type' => 'posts'
+            'type' => 'posts',
+            'attributes' => {
+              'title' => 'a title'
+            }
           }
         }
 
@@ -66,6 +71,30 @@ describe JSONAPI::Rails::DeserializableResource do
 
     context 'whitelist fields' do
 
+    end
+  end
+
+  describe '.deserializable_class' do
+    it 'returns klass if specified' do
+      result = klass.deserializable_class('jsonapi-types', 'anything')
+
+      expect(result).to eq 'anything'
+    end
+  end
+
+  describe '.type_to_model' do
+    class A; end
+    class A::B; end
+    class C < A; end
+    class D < A::B; end
+
+    let(:to_model) { ->(str) { klass.type_to_model(str) } }
+
+    it 'converts plural types to a class' do
+      expect(to_model.call('as')).to eq A
+      expect(to_model.call('a/bs')).to eq A::B
+      expect(to_model.call('cs')).to eq C
+      expect(to_model.call('d')).to eq D
     end
   end
 end

@@ -22,6 +22,7 @@ module JSONAPI
 
           deserializable.class_eval do
             attributes.each do |attribute_name|
+              puts attribute_name
               attribute attribute_name
             end
           end
@@ -72,14 +73,6 @@ module JSONAPI
         #  ap klass.reflections['reflection_name'].methods - Object.methods
         def self.associations_for_class(klass)
           klass.reflections
-        end
-
-        def self.deserializable_class(type, klass)
-          klass || type_to_model(type)
-        end
-
-        def self.type_to_model(type)
-          type.classify.constantize
         end
       end # Builder
     end # DeserializableResource
