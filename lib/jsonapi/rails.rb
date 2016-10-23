@@ -1,3 +1,3 @@
 module JSONAPI
-  require_relative 'deserializable'
+  require_relative './deserializable.rb'
 end
