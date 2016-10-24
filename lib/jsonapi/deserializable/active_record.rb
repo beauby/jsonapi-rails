@@ -49,8 +49,6 @@ module JSONAPI
         end
       end
 
-      attr_accessor :_hash, :_options, :_klass
-
       # if this class is instatiated directly, i.e.: without a spceified
       # class via
       #  JSONAPI::Deserializable::ActiveRecord[ExampleClass]
@@ -58,20 +56,20 @@ module JSONAPI
       # a class will be used for deserialization as if the
       # user specified the deserialization target class.
       def initialize(hash, options: {}, klass: nil)
-        @_hash = hash
-        @_options = options
-        @_klass = klass
+        @hash = hash
+        @options = options
+        @klass = klass
       end
 
       def to_hash
-        type = _hash['data']['type']
-        klass = self.class.deserializable_class(type, _klass)
+        type = @hash['data']['type']
+        klass = self.class.deserializable_class(type, @klass)
 
         if klass.nil?
-          raise "FATAL: class not found for type of `#{type}` or specified _klass `#{_klass&.name}`"
+          raise "FATAL: class not found for type of `#{type}` or specified @klass `#{@klass&.name}`"
         end
 
-        self.class[klass].call(_hash).with_indifferent_access
+        self.class[klass].call(@hash).with_indifferent_access
       end
     end
   end
