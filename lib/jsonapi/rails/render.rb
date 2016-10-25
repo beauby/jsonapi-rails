@@ -27,7 +27,7 @@ module JSONAPI
     def serializable_klass_for(model)
       # TODO(beauby): Move resource inference on class level in
       #   jsonapi-serializable.
-      Serializable::Model.new.resource_klass_for(model.class)
+      JSONAPI::Serializable::Model.new.resource_klass_for(model.class)
     end
   end
 end

@@ -2,6 +2,9 @@ require 'rails/railtie'
 require 'action_controller'
 require 'action_controller/railtie'
 
+require 'jsonapi/rails/parser'
+require 'jsonapi/rails/render'
+
 module JSONAPI
   module Rails
     class Railtie < ::Rails::Railtie
