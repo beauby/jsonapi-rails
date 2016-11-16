@@ -1,3 +1,6 @@
+# MOVED
+## Development now takes place in [jsonapi-rb/rails](https://github.com/jsonapi-rb/rails).
+
 # jsonapi-rails
 Rails plugin for building/consuming [JSON API](http://jsonapi.org) documents.
 
